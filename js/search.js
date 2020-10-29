@@ -5,32 +5,20 @@ $(document).ready(function () {
   });
 
   function search() {
-    if (Boolean($("#keyword_input").val())) {
-      $("#keyword_input").removeClass("is-invalid");
-      $.ajax({
-        url: "server/index.php",
-        type: "POST",
-        dataType: "json",
-        data: { keyword: $("#keyword_input").val() },
-        success: function (result) {
-          if (result.error) {
-            showError(result.error);
-          }
-          $(".show-table").removeClass("d-none");
-          if (result.length > 0) {
-            $(".no-data").addClass("d-none");
-            return fillData(result);
-          }
-          $(".data").remove();
-          $(".no-data").removeClass("d-none");
-        },
-        error: function () {
-          showError("Server Error");
-        },
-      });
-      return;
-    }
-    $("#keyword_input").addClass("is-invalid");
+    $.getJSON("server/index.php", { keyword: $("#keyword_input").val() }, function (result) {
+        if (result.error) return showError(result.error);
+        $(".show-table").removeClass("d-none");
+        $(".alert").addClass("d-none");
+        if (result.length > 0) {
+          $(".no-data").addClass("d-none");
+          return fillData(result);
+        }
+        $(".data").remove();
+        $(".no-data").removeClass("d-none");
+      }
+    ).fail(function () {
+      return showError("Request Failed");
+    });
   }
 
   function fillData(result) {
@@ -44,13 +32,13 @@ $(document).ready(function () {
       );
     });
   }
-  
+
   function showError(error) {
-    $(".show-table").hide();
+    $("p").remove();
+    $(".show-table").addClass("d-none");
     $(".alert").removeClass("d-none");
-    if ($("p").length == 0) {
-      $(".alert").append("<p >" + error + "</p>");
-    }
-    return false;
+    $(".alert").append("<p >" + error + "</p>");
   }
+
+  search();
 });
